@@ -1,0 +1,5 @@
+
+
+export LS_COLORS=$(echo $LS_COLORS | sed "s/di=\(..\);../di=\1;95/")
+
+export PYTHONPATH=/opt/pi/pylib
