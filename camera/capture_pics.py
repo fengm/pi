@@ -13,6 +13,9 @@ import logging
 def retrieve_gps():
 	pass
 
+def test1():
+	print 'eeeee'
+
 def check_output(d_out):
 	import os
 
