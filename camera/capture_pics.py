@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+File: capture_pics.py
+Author: Min Feng
+Version: 0.1
+Create: 2014-03-21 16:54:41
+Description: capture photos on Raspberry PI
+'''
 
 import logging
+
+def retrieve_gps():
+	pass
 
 def check_output(d_out):
 	import os
