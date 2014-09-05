@@ -9,10 +9,11 @@ Description:
 import time
 import threading
 import logging
-import hs_sensor
 
 class optics(threading.Thread):
 	def __init__(self, integ=100, delay=0.01):
+		import hs_sensor
+
 		logging.info('init optics module')
 		threading.Thread.__init__(self)
 
@@ -24,6 +25,8 @@ class optics(threading.Thread):
 		self.delay = delay
 
 	def run(self):
+		import hs_sensor
+
 		logging.info('start receiving')
 
 		_vals = hs_sensor.farray(self.bands)
@@ -44,6 +47,9 @@ class optics(threading.Thread):
 	def stop(self):
 		self.running = False
 
+		import hs_sensor
+		hs_sensor.close()
+
 def main():
 	print 'init object'
 	_obj = optics()
@@ -54,8 +60,8 @@ def main():
 			if _obj.values == None:
 				continue
 
-			for _w, _v in _obj.values.items():
-				print ' -', _w, _v
+			for _v in _obj.values:
+				print ' -', _v[0], _v[1]
 
 			time.sleep(2)
 
@@ -66,7 +72,7 @@ def main():
 		print "Unexpected error:", sys.exc_info()[0]
 		raise
 	finally:
-		print "Stopping gps controller"
+		print "Stopping controller"
 		_obj.stop()
 		#wait for the tread to finish
 		# _obj.join()
