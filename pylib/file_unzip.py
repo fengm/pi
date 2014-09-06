@@ -148,46 +148,78 @@ def compress_folder(fd_in, fd_ot, compress_exts=None):
 			logging.debug('copying %s to %s' %(_f_in, _f_ot))
 			shutil.copy(_f_in, _f_ot)
 
-class file_unzip:
-	def __init__(self, fd_out=''):
-		import os, sys
+def generate_id(fd_out, prefix='', subfix=''):
+	import random, os
 
-		# use 'tmp' folder at the root of the code when no folder specified
-		_fd_out = fd_out if fd_out else os.path.join(sys.path[0], 'tmp')
+	_id = [''] * 10
+	for i in xrange(len(_id)):
+		_id[i] = chr(int(random.random() * 26) + 97)
+
+	_id = ''.join(_id)
+	_id = '%s%s%s' % (prefix, _id, subfix)
+
+	if fd_out and os.path.exists(os.path.join(fd_out, _id)):
+		return generate_id(fd_out, prefix, subfix)
+
+	return _id
+
+def generate_file(fd_out, prefix='', subfix=''):
+	if fd_out == None:
+		raise Exception('invalid path parameter')
+
+	import os
+	return os.path.join(fd_out, generate_id(fd_out, prefix, subfix))
+
+def default_dir(fd_out):
+	import os, sys
+
+	# use 'tmp' folder at the root of the code when no folder specified
+	return fd_out if fd_out else os.path.join(sys.path[0], 'tmp')
+
+def clean(fd_out, remove_root=False):
+	'''force to clean the folder'''
+	import shutil, os
+
+	logging.warning('clean folder: %s (%s)' % (fd_out, remove_root))
+	if remove_root:
+		shutil.rmtree(fd_out, True)
+		return
+
+	for _root, _dirs, _files in os.walk(fd_out):
+		for _file in _files:
+			try:
+				os.remove(os.path.join(_root, _file))
+			except Exception:
+				# ignore the errors
+				pass
+		for _dir in _dirs:
+			shutil.rmtree(os.path.join(_root, _dir), True)
+
+class file_unzip:
+	def __init__(self, fd_out='', exclusive=True):
+		import os
+
+		_fd_out = default_dir(fd_out)
+
 		self.pfolder = _fd_out
 		self.existed = os.path.exists(_fd_out)
 
-		_fd_out = os.path.join(_fd_out, self.generate_id(fd_out))
+		_fd_out = generate_file(_fd_out)
 		os.makedirs(_fd_out)
 
 		self.fd_out = _fd_out
 		self.files = []
+		self.exclusive = exclusive
 
 	# support with statement
 	def __enter__(self):
 		return self
 
 	def __exit__(self, type, value, traceback):
-		self.clean(True)
-
-	def generate_id(self, fd_out, prefix='', subfix=''):
-		import random, os
-
-		_id = [''] * 10
-		for i in xrange(len(_id)):
-			_id[i] = chr(int(random.random() * 26) + 97)
-
-		_id = ''.join(_id)
-		_id = '%s%s%s' % (prefix, _id, subfix)
-
-		if fd_out and os.path.exists(os.path.join(fd_out, _id)):
-			return self.generate_id()
-
-		return _id
+		self.clean()
 
 	def generate_file(self, prefix='', subfix=''):
-		import os
-		return os.path.join(self.fd_out, self.generate_id(self.fd_out, prefix, subfix))
+		return generate_file(self.fd_out, prefix, subfix)
 
 	def _estimate_output(self, f, reuse):
 		import os
@@ -224,18 +256,19 @@ class file_unzip:
 
 		return _f_out
 
-	def clean(self, root=True):
+	def clean(self):
 		import shutil, os
 
-		if root == False:
-			for _f in self.files:
-				os.remove(_f)
+		if self.exclusive:
+			# shutil.rmtree(self.fd_out if self.existed else self.pfolder, True)
+			# forbidden the code for removing the parent dir because it may cause
+			#  potential issue for multiple processing, Min, 13/03/03
+			shutil.rmtree(self.fd_out, True)
 			self.files = []
 			return
 
-		# shutil.rmtree(self.fd_out if self.existed else self.pfolder, True)
-		# forbidden the code for removing the parent dir because it may cause
-		#  potential issue for multiple processing, Min, 13/03/03
-		shutil.rmtree(self.fd_out, True)
+		for _f in self.files:
+			os.remove(_f)
 		self.files = []
+		return
 

@@ -20,6 +20,7 @@ class optics(threading.Thread):
 		self.bands = hs_sensor.init(integ)
 
 		self.values = None
+		self.dicts = None
 		self.running = False
 
 		self.delay = delay
@@ -40,6 +41,13 @@ class optics(threading.Thread):
 			self.waves = _wavs
 
 			self.values = [(_wavs[_b], _vals[_b]) for _b in xrange(self.bands)]
+
+			_ds = {}
+			for i in xrange(self.bands):
+				_ds['w%04d' % i] = self.values[i][0]
+				_ds['v%04d' % i] = self.values[i][1]
+
+			self.dicts = _ds
 
 			if self.delay > 0:
 				time.sleep(self.delay)
