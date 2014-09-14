@@ -29,7 +29,16 @@ def run(cmd, retry, delay):
 
 		_f_log = os.path.join(sys.path[0], 'log', 'cmd_std.log')
 		with open(_f_log, 'w') as _f_opo:
-			run_commands.run(_cmd, True, cwd=_p, stdout=_f_opo, stderr=_f_opo)
+			import config
+			if config.cfg.getboolean('conf', 'background'):
+				_out_log = _f_opo
+				_err_log = _f_opo
+			else:
+				import sys
+				_out_log = sys.stdout
+				_err_log = sys.stderr
+
+			run_commands.run(_cmd, True, cwd=_p, stdout=_out_log, stderr=_err_log)
 		break
 
 def main():

@@ -22,7 +22,7 @@ def main():
 
 	print 'init modules'
 	import optics
-	_s_optic = optics.optics(config.cfg.get('conf', 'integ'))
+	_s_optic = optics.optics(config.cfg.getint('conf', 'integ'))
 
 	import auto_pilot
 	_s_autop = auto_pilot.auto_pilot()
@@ -58,6 +58,8 @@ def main():
 		_d_out = config.cfg.get('conf', 'output')
 		os.path.exists(_d_out) or os.makedirs(_d_out)
 
+		import sys
+
 		_f_out = generate_file_name(_d_out)
 		with open(_f_out, 'w') as _fo:
 			for i in xrange(config.cfg.getint('conf', 'max_num')):
@@ -79,14 +81,12 @@ def main():
 				_num += 1
 				logging.info('r:%s' % _num)
 
-				print '.',
+				print '\r', _num,
 				if _num % 10:
-					import sys
 					sys.stdout.flush()
 					_fo.flush()
 
 				time.sleep(_delay)
-
 	except KeyboardInterrupt:
 		print '\n\n* User stopped the program'
 
@@ -103,6 +103,9 @@ def main():
 			_s_optic.stop()
 		if _s_autop:
 			_s_autop.stop()
+
+	print '\n'
+	print 'done'
 
 def _usage():
 	import argparse
