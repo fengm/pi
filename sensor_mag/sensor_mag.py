@@ -22,7 +22,7 @@ def main():
 
 	print 'init modules'
 	import optics
-	_s_optic = optics.optics()
+	_s_optic = optics.optics(config.cfg.get('conf', 'integ'))
 
 	import auto_pilot
 	_s_autop = auto_pilot.auto_pilot()
@@ -48,6 +48,7 @@ def main():
 			raise Exception('failed to initialzied the modules')
 
 		print 'start reading'
+		logging.info('start reading')
 
 		_col = None
 		_num = 0
@@ -76,6 +77,7 @@ def main():
 				_fo.write(','.join(map(str, [_val[_k] for _k in _col])))
 				_fo.write('\n')
 				_num += 1
+				logging.info('r:%s' % _num)
 
 				print '.',
 				if _num % 10:
@@ -96,6 +98,7 @@ def main():
 
 		print '\n\n* Error:', err
 	finally:
+		logging.info('stop')
 		if _s_optic:
 			_s_optic.stop()
 		if _s_autop:
@@ -105,8 +108,8 @@ def _usage():
 	import argparse
 
 	_p = argparse.ArgumentParser()
-	_p.add_argument('--logging', dest='logging')
-	_p.add_argument('--config', dest='config')
+	_p.add_argument('--logging', dest='logging', default='/media/usb1/conf/sensor_mag.log')
+	_p.add_argument('--config', dest='config', default='/media/usb1/conf/sensor_mag.conf')
 	_p.add_argument('--temp', dest='temp')
 
 	return _p.parse_args()
